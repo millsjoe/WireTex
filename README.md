@@ -44,7 +44,7 @@ WireTex markup  →  lib/grammar.pegjs (Peggy)  →  AST  →  lib/renderer.ts  
 | `lib/sample.ts` | Default sandbox example |
 | `app/` | Next.js routes: landing, sandbox, docs |
 | `components/EditorApp.tsx` | Split editor + toolbar |
-| `.cursor/skills/wiretex-wireframes/` | Cursor skill for generating markup from prompts |
+| `skills/wiretex-wireframes/` | Agent instructions for wireframe generation (Cursor, Copilot, Claude Code, etc.) |
 
 ## Editor features
 
@@ -149,13 +149,20 @@ Click **Customise theme** in the sandbox to edit hex values (and `rgba(...)` for
 
 To target a different output (React components, PDF, Figma plugin), replace or alternate `lib/renderer.ts` — the grammar and AST stay the same.
 
-## Generating wireframes with Cursor
+## Generating wireframes with AI assistants
 
-Use the project skill when you want markup from a natural-language prompt:
+Shared agent instructions live in **`skills/wiretex-wireframes/`**. See **`skills/README.md`** for how to use them with Cursor, GitHub Copilot, Claude Code, and other tools.
 
-> Follow the **wiretex-wireframes** skill and create a wireframe for a checkout page.
+Example prompt:
 
-Skill path: `.cursor/skills/wiretex-wireframes/SKILL.md`
+> Read `skills/wiretex-wireframes/instructions.md` and create a wireframe for a checkout page.
+
+This repo also includes:
+
+- **`AGENTS.md`** — project context for any coding agent
+- **`.cursor/skills/wiretex-wireframes/`** — Cursor skill entry point
+- **`.github/copilot-instructions.md`** — GitHub Copilot workspace instructions
+- **`CLAUDE.md`** — Claude Code project instructions
 
 ## Scripts
 
