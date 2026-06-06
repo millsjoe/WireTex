@@ -4,6 +4,8 @@
 
 WireTex is a markdown-like language for sketching UI wireframes in plain text. Write compact markup on the left, preview styled wireframes on the right.
 
+**Live demo:** [wiretex.xyz](https://wiretex.xyz)
+
 This repo contains the **grammar**, **HTML renderer**, and a **Next.js live editor**.
 
 ## Quick start
@@ -13,7 +15,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) for the landing page, or go directly to the [sandbox](/sandbox) editor and [docs](/docs).
+Open [wiretex.xyz](https://wiretex.xyz) for the live site, or run locally at [http://localhost:3000](http://localhost:3000) after `npm run dev`. Try the [sandbox](/sandbox) editor and [docs](/docs).
 
 The parser is generated from `lib/grammar.pegjs` on every `dev` and `build`:
 

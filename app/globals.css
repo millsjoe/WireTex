@@ -974,6 +974,10 @@ input {
   background: #1e3a5f;
 }
 
+.site-nav-external {
+  margin-left: 0.15rem;
+}
+
 .sandbox-shell {
   display: flex;
   flex-direction: column;

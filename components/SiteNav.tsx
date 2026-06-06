@@ -14,6 +14,8 @@ const links: { href: string; label: string; page: NavPage }[] = [
   { href: "/docs", label: "Docs", page: "docs" },
 ];
 
+const GITHUB_URL = "https://github.com/millsjoe/WireTex";
+
 export function SiteNav({ current, compact = false }: SiteNavProps) {
   return (
     <header className={`site-nav${compact ? " site-nav-compact" : ""}`}>
@@ -38,6 +40,14 @@ export function SiteNav({ current, compact = false }: SiteNavProps) {
             {label}
           </Link>
         ))}
+        <a
+          href={GITHUB_URL}
+          className="site-nav-external"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub
+        </a>
       </nav>
     </header>
   );
