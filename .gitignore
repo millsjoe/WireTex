@@ -1,0 +1,4 @@
+node_modules
+.next
+lib/parser.generated.js
+lib/parser.generated.d.ts
