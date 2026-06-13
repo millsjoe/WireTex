@@ -198,6 +198,48 @@ input {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+  gap: 0.75rem;
+}
+
+.preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+.preview-download-btn {
+  border: 1px solid #374151;
+  background: #151922;
+  color: #e5e7eb;
+  border-radius: 0.375rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.preview-download-btn:hover:not(:disabled) {
+  border-color: #60a5fa;
+}
+
+.preview-download-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.preview-download-error {
+  font-size: 0.75rem;
+  color: #fca5a5;
+}
+
+.preview-capture {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .theme-panel {
@@ -799,10 +841,196 @@ input {
   background: var(--wt-surface, #fff);
 }
 
+.app-main-chat {
+  grid-template-columns:
+    minmax(260px, 0.9fr)
+    minmax(240px, 1fr)
+    minmax(320px, 1.2fr);
+}
+
+.chat-header-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.65rem;
+}
+
+.chat-rate-limit {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.panel-chat {
+  min-width: 0;
+}
+
+.chat-messages {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  background: #0f1115;
+}
+
+.chat-empty {
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.chat-empty p {
+  margin: 0 0 0.5rem;
+}
+
+.chat-empty ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.chat-empty li {
+  margin-bottom: 0.35rem;
+}
+
+.chat-message {
+  max-width: 92%;
+}
+
+.chat-message-user {
+  align-self: flex-end;
+}
+
+.chat-message-assistant {
+  align-self: flex-start;
+}
+
+.chat-message-label {
+  margin-bottom: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.chat-message-body {
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.75rem;
+  line-height: 1.5;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+}
+
+.chat-message-user .chat-message-body {
+  background: #1e3a5f;
+  color: #e5e7eb;
+}
+
+.chat-message-assistant .chat-message-body {
+  background: #151922;
+  border: 1px solid #2a2f3a;
+  color: #e5e7eb;
+}
+
+.chat-message-loading {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.chat-form {
+  border-top: 1px solid #2a2f3a;
+  padding: 0.85rem 1rem 1rem;
+  background: #151922;
+}
+
+.chat-error {
+  margin: 0 0 0.65rem;
+  color: #fca5a5;
+  font-size: 0.85rem;
+}
+
+.chat-input {
+  width: 100%;
+  resize: vertical;
+  min-height: 4.5rem;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  background: #0f1115;
+  color: #e5e7eb;
+  font: inherit;
+  line-height: 1.5;
+  outline: none;
+}
+
+.chat-input:focus {
+  border-color: #2563eb;
+}
+
+.chat-input:disabled {
+  opacity: 0.7;
+}
+
+.chat-turnstile {
+  margin-top: 0.65rem;
+}
+
+.chat-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.65rem;
+}
+
+.chat-form-hint {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.chat-submit {
+  border: 1px solid #2563eb;
+  background: #2563eb;
+  color: white;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-submit:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.chat-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.chat-preview-empty {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 900px) {
-  .app-main {
+  .app-main,
+  .app-main-chat {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(12rem, 0.42fr) minmax(16rem, 0.58fr);
+    grid-template-rows: minmax(14rem, 0.34fr) minmax(12rem, 0.33fr) minmax(
+        16rem,
+        0.33fr
+      );
+  }
+
+  .chat-header-meta {
+    align-items: flex-start;
   }
 
   .panel {

@@ -8,9 +8,9 @@ When the user asks for wireframes, WireTex markup, UI sketches, or screen layout
 
 1. Read `skills/wiretex-wireframes/instructions.md`
 2. Consult `skills/wiretex-wireframes/syntax.md` for edge cases
-3. Validate markup with `parseWireTex` from `lib/parse.ts` when possible
+3. Validate markup with `parseWireTex` from `lib/wiretex/parse.ts` when possible
 
-Grammar source of truth: `lib/grammar.pegjs`. Do not invent syntax.
+Grammar source of truth: `lib/wiretex/grammar.pegjs`. Do not invent syntax.
 
 ## Quick pitfalls
 

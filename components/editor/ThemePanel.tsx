@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Theme } from "@/lib/themes";
-import { themeFieldLabels, themeVarKeys } from "@/lib/themes";
+import type { Theme } from "@/lib/site/themes";
+import { themeFieldLabels, themeVarKeys } from "@/lib/site/themes";
 
 interface ThemePanelProps {
   theme: Theme;

@@ -112,30 +112,17 @@ function renderInlineNode(node: Node): string {
 }
 
 // ---------------------------------------------------------------------------
-// Images
+// Images — wireframes always use placeholders; remote URLs are never loaded.
 // ---------------------------------------------------------------------------
 
-function isPlaceholderHref(href: string): boolean {
-  const h = href.trim();
-  return !h || h === "#";
-}
-
-function renderImage(title: string, href: string, layout: string): string {
+function renderImage(title: string, _href: string, layout: string): string {
   const label = esc(title);
 
-  if (isPlaceholderHref(href)) {
-    return `
+  return `
 <div class="utext-img-placeholder ${layout}" role="img" aria-label="${label}">
   <span class="utext-img-placeholder-art" aria-hidden="true"></span>
   <span class="utext-img-placeholder-label">${label}</span>
 </div>`;
-  }
-
-  return `
-<figure class="utext-figure ${layout}">
-  <img src="${esc(href)}" alt="${label}" class="utext-img">
-  <figcaption class="utext-img-caption">${label}</figcaption>
-</figure>`;
 }
 
 function renderImageGroup(images: ImageRef[]): string {

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-type NavPage = "home" | "sandbox" | "docs";
+type NavPage = "home" | "sandbox" | "docs" | "chat";
 
 interface SiteNavProps {
   current?: NavPage;
@@ -11,6 +11,7 @@ interface SiteNavProps {
 const links: { href: string; label: string; page: NavPage }[] = [
   { href: "/", label: "Home", page: "home" },
   { href: "/sandbox", label: "Sandbox", page: "sandbox" },
+  { href: "/chat", label: "Generate", page: "chat" },
   { href: "/docs", label: "Docs", page: "docs" },
 ];
 

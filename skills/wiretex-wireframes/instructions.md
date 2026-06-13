@@ -1,6 +1,6 @@
 # WireTex wireframe generation
 
-Generate **valid WireTex markup** that parses with `lib/grammar.pegjs` and renders via `lib/renderer.ts`.
+Generate **valid WireTex markup** that parses with `lib/wiretex/grammar.pegjs` and renders via `lib/wiretex/renderer.ts`.
 
 Use this guide when the user asks for wireframes, WireTex markup, UI sketches, low-fidelity mockups, or screen layouts in this language.
 
@@ -12,9 +12,9 @@ Use this guide when the user asks for wireframes, WireTex markup, UI sketches, l
 4. **Validate** when you have shell access to this repository:
    ```bash
    npm run generate-parser
-   npx tsx -e "import { parseWireTex } from './lib/parse.ts'; parseWireTex(\`...\`); console.log('OK');"
+   npx tsx -e "import { parseWireTex } from './lib/wiretex/parse.ts'; parseWireTex(\`...\`); console.log('OK');"
    ```
-5. **Deliver** the markup in a fenced code block. If editing the app, update `lib/sample.ts` or the user's target file.
+5. **Deliver** the markup in a fenced code block. If editing the app, update `lib/site/sample.ts` or the user's target file.
 
 ## Output rules
 
@@ -148,4 +148,4 @@ Check your inbox for further instructions.
 
 Full syntax tables and edge cases: [syntax.md](syntax.md)
 
-Source of truth: `lib/grammar.pegjs`, `lib/renderer.ts`, `lib/sample.ts`, `lib/docs.ts`.
+Source of truth: `lib/wiretex/grammar.pegjs`, `lib/wiretex/renderer.ts`, `lib/site/sample.ts`, `lib/site/docs.ts`.

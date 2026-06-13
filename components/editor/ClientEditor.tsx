@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 
 const EditorApp = dynamic(
-  () => import("@/components/EditorApp").then((mod) => mod.EditorApp),
+  () => import("@/components/editor/EditorApp").then((mod) => mod.EditorApp),
   {
     ssr: false,
     loading: () => (

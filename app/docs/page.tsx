@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { DocsHeading } from "@/components/DocsHeading";
-import { DocsSidebar } from "@/components/DocsSidebar";
-import { SiteNav } from "@/components/SiteNav";
-import { docCategories, slugifyCategory } from "@/lib/docs";
+import { DocsHeading } from "@/components/docs/DocsHeading";
+import { DocsSidebar } from "@/components/docs/DocsSidebar";
+import { SiteNav } from "@/components/layout/SiteNav";
+import { docCategories, slugifyCategory } from "@/lib/site/docs";
 
 export default function DocsPage() {
   return (
@@ -18,7 +18,8 @@ export default function DocsPage() {
             <p>
               Every component supported by the grammar, with copy-paste snippets.
               Authoritative source:{" "}
-              <code>lib/grammar.pegjs</code> and <code>lib/renderer.ts</code>.
+              <code>lib/wiretex/grammar.pegjs</code> and{" "}
+              <code>lib/wiretex/renderer.ts</code>.
             </p>
             <Link href="/sandbox" className="docs-sandbox-link">
               Try it in the sandbox →

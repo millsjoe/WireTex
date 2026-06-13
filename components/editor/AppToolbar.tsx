@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { defaultThemes, type Theme } from "@/lib/themes";
+import { defaultThemes, type Theme } from "@/lib/site/themes";
 
 type Device = "web" | "mobile";
 

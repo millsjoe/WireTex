@@ -1,6 +1,6 @@
 import type { Node } from "./renderer";
 
-// Generated at build time from lib/grammar.pegjs
+// Generated at build time from lib/wiretex/grammar.pegjs
 import { parse as pegParse } from "./parser.generated.js";
 
 export function parseWireTex(source: string): Node[] {

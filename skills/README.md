@@ -47,7 +47,7 @@ From the repo root:
 
 ```bash
 npm run generate-parser
-npx tsx -e "import { parseWireTex } from './lib/parse.ts'; parseWireTex(\`...\`); console.log('OK');"
+npx tsx -e "import { parseWireTex } from './lib/wiretex/parse.ts'; parseWireTex(\`...\`); console.log('OK');"
 ```
 
 Human-readable reference: `/docs` when the dev server is running.
