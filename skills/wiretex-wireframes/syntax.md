@@ -1,6 +1,6 @@
 # WireTex syntax reference
 
-Authoritative grammar: `lib/grammar.pegjs`.
+Authoritative grammar: `lib/wiretex/grammar.pegjs`.
 
 ## Headings
 

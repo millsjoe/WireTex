@@ -17,7 +17,7 @@ npm run dev
 
 Open [wiretex.xyz](https://wiretex.xyz) for the live site, or run locally at [http://localhost:3000](http://localhost:3000) after `npm run dev`. Try the [sandbox](/sandbox) editor and [docs](/docs).
 
-The parser is generated from `lib/grammar.pegjs` on every `dev` and `build`:
+The parser is generated from `lib/wiretex/grammar.pegjs` on every `dev` and `build`:
 
 ```bash
 npm run generate-parser
@@ -26,27 +26,47 @@ npm run generate-parser
 ## How it works
 
 ```
-WireTex markup  →  lib/grammar.pegjs (Peggy)  →  AST  →  lib/renderer.ts  →  HTML  →  preview
+WireTex markup  →  lib/wiretex/grammar.pegjs (Peggy)  →  AST  →  lib/wiretex/renderer.ts  →  HTML  →  preview
 ```
 
 1. **Author markup** in the editor (or any text file). Syntax is line-oriented, similar to markdown with UI-specific tokens.
-2. **Parse** with Peggy. The grammar lives in `lib/grammar.pegjs`; the compiled parser is written to `lib/parser.generated.js` (gitignored, rebuilt automatically).
-3. **Render** the AST to HTML in `lib/renderer.ts`. Output uses `utext-*` CSS classes and theme CSS variables (`--wt-bg`, `--wt-accent`, etc.).
+2. **Parse** with Peggy. The grammar lives in `lib/wiretex/grammar.pegjs`; the compiled parser is written to `lib/wiretex/parser.generated.js` (gitignored, rebuilt automatically).
+3. **Render** the AST to HTML in `lib/wiretex/renderer.ts`. Output uses `utext-*` CSS classes and theme CSS variables (`--wt-bg`, `--wt-accent`, etc.).
 4. **Preview** in the sandbox at `/sandbox`. The editor parses on every change and injects HTML into an isolated preview pane (imperative `innerHTML`, not React children, so app controls stay interactive).
 
 ### Project layout
 
+```
+app/                    Next.js routes (landing, sandbox, docs, chat)
+  actions/              Server actions for AI generation
+components/
+  layout/               SiteNav
+  docs/                 Docs sidebar and headings
+  editor/               Sandbox editor, preview, themes, device frames
+  chat/                 AI wireframe generator UI
+  landing/              Homepage demo
+lib/
+  wiretex/              Grammar, parser, renderer (core language)
+  site/                 Docs data, themes, sample markup
+  generator/            AI prompts, Together client, output sanitization
+  security/             Rate limiting, Turnstile verification
+  preview/              PNG export helper
+models/                 Ollama Modelfile (synced from generator prompt)
+scripts/                Build/sync scripts
+skills/                 Agent instructions for wireframe generation
+public/                 Static assets
+```
+
 | Path | Purpose |
 |------|---------|
-| `lib/grammar.pegjs` | Source grammar — edit this to add syntax |
-| `lib/renderer.ts` | AST → HTML — swap for React, Tailwind, etc. |
-| `lib/parse.ts` | Thin wrapper around generated parser |
-| `lib/docs.ts` | Component reference data for `/docs` |
-| `lib/themes.ts` | Built-in themes and CSS variable keys |
-| `lib/sample.ts` | Default sandbox example |
-| `app/` | Next.js routes: landing, sandbox, docs |
-| `components/EditorApp.tsx` | Split editor + toolbar |
-| `skills/wiretex-wireframes/` | Agent instructions for wireframe generation (Cursor, Copilot, Claude Code, etc.) |
+| `lib/wiretex/grammar.pegjs` | Source grammar — edit this to add syntax |
+| `lib/wiretex/renderer.ts` | AST → HTML — swap for React, Tailwind, etc. |
+| `lib/wiretex/parse.ts` | Thin wrapper around generated parser |
+| `lib/site/docs.ts` | Component reference data for `/docs` |
+| `lib/site/themes.ts` | Built-in themes and CSS variable keys |
+| `lib/site/sample.ts` | Default sandbox example |
+| `lib/generator/` | System prompt, Together AI client, `/chat` generation |
+| `app/chat/` | AI wireframe generator page |
 
 ## Editor features
 
@@ -120,8 +140,7 @@ WireTex markup  →  lib/grammar.pegjs (Peggy)  →  AST  →  lib/renderer.ts  
 
 | Syntax | Output |
 |--------|--------|
-| `![Label](#)` | Placeholder image (use `#` for wireframes) |
-| `![Label](https://…)` | Real image |
+| `![Label](#)` | Placeholder image (wireframes use `#` only; remote URLs are not loaded) |
 | `{` … `}` wrapping multiple `![…](…)` lines | Equal-width image group in a fixed-height row |
 
 ### Code
@@ -143,13 +162,13 @@ Click **Customise theme** in the sandbox to edit hex values (and `rgba(...)` for
 
 ## Extending WireTex
 
-1. Add rules to `lib/grammar.pegjs`
+1. Add rules to `lib/wiretex/grammar.pegjs`
 2. Run `npm run generate-parser`
-3. Add node types and HTML output in `lib/renderer.ts`
+3. Add node types and HTML output in `lib/wiretex/renderer.ts`
 4. Style new classes in `app/globals.css`
-5. Add an entry to `lib/docs.ts` for the `/docs` page
+5. Add an entry to `lib/site/docs.ts` for the `/docs` page
 
-To target a different output (React components, PDF, Figma plugin), replace or alternate `lib/renderer.ts` — the grammar and AST stay the same.
+To target a different output (React components, PDF, Figma plugin), replace or alternate `lib/wiretex/renderer.ts` — the grammar and AST stay the same.
 
 ## Generating wireframes with AI assistants
 
@@ -173,4 +192,5 @@ This repo also includes:
 | `npm run dev` | Generate parser + start dev server |
 | `npm run build` | Production build |
 | `npm run start` | Serve production build |
-| `npm run generate-parser` | Compile `lib/grammar.pegjs` only |
+| `npm run generate-parser` | Compile `lib/wiretex/grammar.pegjs` only |
+| `npm run sync-system-prompt` | Sync generator prompt to `lib/generator/` and `models/Modelfile` |

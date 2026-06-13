@@ -1,7 +1,7 @@
-import { LANDING_EXAMPLE } from "@/lib/landing-example";
-import { parseWireTex } from "@/lib/parse";
-import { render } from "@/lib/renderer";
-import { defaultThemes, themeToStyle } from "@/lib/themes";
+import { LANDING_EXAMPLE } from "@/lib/site/landing-example";
+import { parseWireTex } from "@/lib/wiretex/parse";
+import { render } from "@/lib/wiretex/renderer";
+import { defaultThemes, themeToStyle } from "@/lib/site/themes";
 
 export function LandingExample() {
   const html = render(parseWireTex(LANDING_EXAMPLE));

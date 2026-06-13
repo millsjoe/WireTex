@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { slugifyCategory, type DocCategory } from "@/lib/docs";
+import { slugifyCategory, type DocCategory } from "@/lib/site/docs";
 
 interface DocsSidebarProps {
   categories: DocCategory[];

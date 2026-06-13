@@ -1,4 +1,8 @@
 node_modules
 .next
-lib/parser.generated.js
-lib/parser.generated.d.ts
+lib/wiretex/parser.generated.js
+lib/wiretex/parser.generated.d.ts
+.env
+.env.local
+.env.*.local
+tsconfig.tsbuildinfo

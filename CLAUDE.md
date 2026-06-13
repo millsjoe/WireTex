@@ -11,5 +11,5 @@ Validate with:
 
 ```bash
 npm run generate-parser
-npx tsx -e "import { parseWireTex } from './lib/parse.ts'; parseWireTex(\`...\`); console.log('OK');"
+npx tsx -e "import { parseWireTex } from './lib/wiretex/parse.ts'; parseWireTex(\`...\`); console.log('OK');"
 ```

@@ -1,17 +1,17 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { parseWireTex } from "@/lib/parse";
-import { render } from "@/lib/renderer";
+import { parseWireTex } from "@/lib/wiretex/parse";
+import { render } from "@/lib/wiretex/renderer";
 import {
   createCustomTheme,
   defaultThemes,
   type Theme,
-} from "@/lib/themes";
-import { SAMPLE_WIRETEX } from "@/lib/sample";
-import { AppToolbar } from "@/components/AppToolbar";
-import { ThemePanel } from "@/components/ThemePanel";
-import { WireframePreview } from "@/components/WireframePreview";
+} from "@/lib/site/themes";
+import { SAMPLE_WIRETEX } from "@/lib/site/sample";
+import { AppToolbar } from "@/components/editor/AppToolbar";
+import { ThemePanel } from "@/components/editor/ThemePanel";
+import { WireframePreview } from "@/components/editor/WireframePreview";
 
 type Device = "web" | "mobile";
 

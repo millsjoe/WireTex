@@ -1,5 +1,5 @@
-import { ClientEditor } from "@/components/ClientEditor";
-import { SiteNav } from "@/components/SiteNav";
+import { ClientEditor } from "@/components/editor/ClientEditor";
+import { SiteNav } from "@/components/layout/SiteNav";
 
 export default function SandboxPage() {
   return (

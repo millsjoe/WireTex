@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { LandingExample } from "@/components/LandingExample";
-import { SiteNav } from "@/components/SiteNav";
+import { LandingExample } from "@/components/landing/LandingExample";
+import { SiteNav } from "@/components/layout/SiteNav";
 
 export default function HomePage() {
   return (
