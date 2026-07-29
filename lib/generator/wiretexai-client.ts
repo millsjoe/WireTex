@@ -10,8 +10,7 @@ const RETRY_DELAY_MS = 1_000;
 
 // Failure classes that fail fast (a connection-level error, or an immediate non-2xx
 // from Cloudflare's edge) rather than after waiting out the full request timeout.
-// Retrying these once absorbs the brief, silent gaps observed between the
-// Cloudflare Tunnel and the origin container. Deliberately excludes "timeout"
+// Retrying these once absorbs brief, transient gaps. Deliberately excludes "timeout"
 // (the first attempt already waited the full budget - retrying would double the
 // worst-case wait for no real benefit) and "upstream_auth"/"upstream_rate_limit"
 // (retrying immediately won't change the outcome).
@@ -31,14 +30,8 @@ export async function callWireTexAI(
     );
   }
 
-  // Shared across both attempts so the two log lines for a single logical
-  // request (original + retry) can be grepped/correlated together, and their
-  // timestamps lined up against Cloudflare's Security Events log and the
-  // wiretexai/cloudflared container logs.
-  const requestId = crypto.randomUUID().slice(0, 8);
-
   try {
-    return await attemptGenerate(wiretexaiUrl, apiKey, prompt, history, requestId, 1);
+    return await attemptGenerate(wiretexaiUrl, apiKey, prompt, history);
   } catch (error) {
     const serviceError = toGenerationServiceError(error);
 
@@ -49,7 +42,7 @@ export async function callWireTexAI(
     await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
 
     try {
-      return await attemptGenerate(wiretexaiUrl, apiKey, prompt, history, requestId, 2);
+      return await attemptGenerate(wiretexaiUrl, apiKey, prompt, history);
     } catch (retryError) {
       throw toGenerationServiceError(retryError);
     }
@@ -61,29 +54,7 @@ async function attemptGenerate(
   apiKey: string,
   prompt: string,
   history: ChatMessage[],
-  requestId: string,
-  attempt: number,
 ): Promise<string> {
-  const startedAt = new Date();
-  const startedMs = Date.now();
-
-  const requestHeaders = {
-    // Never log the token itself - presence/length is enough to confirm it was sent.
-    Authorization: apiKey ? `Bearer <redacted, ${apiKey.length} chars>` : "<missing>",
-    "Content-Type": "application/json",
-  };
-
-  console.log(
-    `[wiretexai-client] ${requestId} attempt=${attempt} request`,
-    {
-      timestamp: startedAt.toISOString(),
-      url: `${wiretexaiUrl}/v1/generate`,
-      method: "POST",
-      requestHeaders,
-      promptLen: prompt.trim().length,
-      historyLen: history.length,
-    },
-  );
   // Filter history to only include user and assistant messages (belt-and-suspenders defense)
   const safeHistory = history.filter(
     (msg): msg is ChatMessage =>
@@ -110,11 +81,8 @@ async function attemptGenerate(
   });
 
   if (!response.ok) {
-    // Read the raw text first so a non-JSON body (e.g. Cloudflare's own HTML
-    // error page when the tunnel has no live connection) is still visible in
-    // logs instead of collapsing to a silent null - that distinction is the
-    // difference between "our Go server rejected this" and "the request never
-    // reached our Go server at all".
+    // Read the raw text first so a non-JSON body (e.g. an edge/proxy error page)
+    // is still visible in logs instead of collapsing to a silent null.
     const rawBody = await response.text().catch(() => null);
     let parsedBody: unknown = null;
     if (rawBody) {
@@ -127,20 +95,6 @@ async function attemptGenerate(
 
     const httpErrorCode = classifyHttpError(response.status);
     const userMessage = getUserMessageForHttpError(httpErrorCode);
-
-    console.error(
-      `[wiretexai-client] ${requestId} attempt=${attempt} failed`,
-      {
-        durationMs: Date.now() - startedMs,
-        httpStatus: response.status,
-        errorCode: httpErrorCode,
-        // cf-ray is Cloudflare's per-request trace ID - hand this to Cloudflare
-        // support if escalating. If it's absent, the response likely never
-        // touched Cloudflare's edge at all (e.g. a local network failure).
-        responseHeaders: Object.fromEntries(response.headers.entries()),
-      },
-    );
-
     throw new GenerationServiceError(httpErrorCode, userMessage, {
       status: response.status,
       contentType: response.headers.get("content-type"),
@@ -153,29 +107,11 @@ async function attemptGenerate(
   const markup = (data.markup ?? "").trim();
 
   if (!markup) {
-    console.error(
-      `[wiretexai-client] ${requestId} attempt=${attempt} failed`,
-      {
-        durationMs: Date.now() - startedMs,
-        httpStatus: response.status,
-        errorCode: "empty_response",
-      },
-    );
-
     throw new GenerationServiceError(
       "empty_response",
       "The model returned an empty response. Please try again.",
     );
   }
-
-  console.log(
-    `[wiretexai-client] ${requestId} attempt=${attempt} succeeded`,
-    {
-      durationMs: Date.now() - startedMs,
-      markupLen: markup.length,
-      responseHeaders: Object.fromEntries(response.headers.entries()),
-    },
-  );
 
   return markup;
 }
