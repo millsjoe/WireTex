@@ -31,8 +31,14 @@ export async function callWireTexAI(
     );
   }
 
+  // Shared across both attempts so the two log lines for a single logical
+  // request (original + retry) can be grepped/correlated together, and their
+  // timestamps lined up against Cloudflare's Security Events log and the
+  // wiretexai/cloudflared container logs.
+  const requestId = crypto.randomUUID().slice(0, 8);
+
   try {
-    return await attemptGenerate(wiretexaiUrl, apiKey, prompt, history);
+    return await attemptGenerate(wiretexaiUrl, apiKey, prompt, history, requestId, 1);
   } catch (error) {
     const serviceError = toGenerationServiceError(error);
 
@@ -43,7 +49,7 @@ export async function callWireTexAI(
     await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
 
     try {
-      return await attemptGenerate(wiretexaiUrl, apiKey, prompt, history);
+      return await attemptGenerate(wiretexaiUrl, apiKey, prompt, history, requestId, 2);
     } catch (retryError) {
       throw toGenerationServiceError(retryError);
     }
@@ -55,7 +61,21 @@ async function attemptGenerate(
   apiKey: string,
   prompt: string,
   history: ChatMessage[],
+  requestId: string,
+  attempt: number,
 ): Promise<string> {
+  const startedAt = new Date();
+  const startedMs = Date.now();
+
+  console.log(
+    `[wiretexai-client] ${requestId} attempt=${attempt} request`,
+    {
+      timestamp: startedAt.toISOString(),
+      url: `${wiretexaiUrl}/v1/generate`,
+      promptLen: prompt.trim().length,
+      historyLen: history.length,
+    },
+  );
   // Filter history to only include user and assistant messages (belt-and-suspenders defense)
   const safeHistory = history.filter(
     (msg): msg is ChatMessage =>
@@ -99,6 +119,16 @@ async function attemptGenerate(
 
     const httpErrorCode = classifyHttpError(response.status);
     const userMessage = getUserMessageForHttpError(httpErrorCode);
+
+    console.error(
+      `[wiretexai-client] ${requestId} attempt=${attempt} failed`,
+      {
+        durationMs: Date.now() - startedMs,
+        httpStatus: response.status,
+        errorCode: httpErrorCode,
+      },
+    );
+
     throw new GenerationServiceError(httpErrorCode, userMessage, {
       status: response.status,
       contentType: response.headers.get("content-type"),
@@ -111,11 +141,28 @@ async function attemptGenerate(
   const markup = (data.markup ?? "").trim();
 
   if (!markup) {
+    console.error(
+      `[wiretexai-client] ${requestId} attempt=${attempt} failed`,
+      {
+        durationMs: Date.now() - startedMs,
+        httpStatus: response.status,
+        errorCode: "empty_response",
+      },
+    );
+
     throw new GenerationServiceError(
       "empty_response",
       "The model returned an empty response. Please try again.",
     );
   }
+
+  console.log(
+    `[wiretexai-client] ${requestId} attempt=${attempt} succeeded`,
+    {
+      durationMs: Date.now() - startedMs,
+      markupLen: markup.length,
+    },
+  );
 
   return markup;
 }
