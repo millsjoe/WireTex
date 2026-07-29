@@ -6,77 +6,118 @@ import {
 } from "@/lib/generator/wiretexai-errors";
 
 const WIRETEXAI_TIMEOUT_MS = 110_000; // 110 seconds, longer than backend's ~90s Ollama timeout
+const RETRY_DELAY_MS = 1_000;
+
+// Failure classes that fail fast (a connection-level error, or an immediate non-2xx
+// from Cloudflare's edge) rather than after waiting out the full request timeout.
+// Retrying these once absorbs the brief, silent gaps observed between the
+// Cloudflare Tunnel and the origin container. Deliberately excludes "timeout"
+// (the first attempt already waited the full budget - retrying would double the
+// worst-case wait for no real benefit) and "upstream_auth"/"upstream_rate_limit"
+// (retrying immediately won't change the outcome).
+const RETRYABLE_CODES = new Set(["unreachable", "upstream_error"]);
 
 export async function callWireTexAI(
   prompt: string,
   history: ChatMessage[] = [],
 ): Promise<string> {
-  try {
-    const wiretexaiUrl = process.env.WIRETEXAI_URL;
-    const apiKey = process.env.WIRETEXAI_API_KEY;
+  const wiretexaiUrl = process.env.WIRETEXAI_URL;
+  const apiKey = process.env.WIRETEXAI_API_KEY;
 
-    if (!wiretexaiUrl || !apiKey) {
-      throw new GenerationServiceError(
-        "config",
-        "Generation is temporarily unavailable.",
-      );
-    }
-
-    // Filter history to only include user and assistant messages (belt-and-suspenders defense)
-    const safeHistory = history.filter(
-      (msg): msg is ChatMessage =>
-        (msg.role === "user" || msg.role === "assistant") &&
-        typeof msg.content === "string",
+  if (!wiretexaiUrl || !apiKey) {
+    throw new GenerationServiceError(
+      "config",
+      "Generation is temporarily unavailable.",
     );
-
-    const requestBody = {
-      prompt: prompt.trim(),
-      history: safeHistory.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      })),
-    };
-
-    const response = await fetch(`${wiretexaiUrl}/v1/generate`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-      signal: AbortSignal.timeout(WIRETEXAI_TIMEOUT_MS),
-    });
-
-    if (!response.ok) {
-      let errorBody: unknown;
-      try {
-        errorBody = await response.json();
-      } catch {
-        errorBody = null;
-      }
-
-      const httpErrorCode = classifyHttpError(response.status);
-      const userMessage = getUserMessageForHttpError(httpErrorCode);
-      throw new GenerationServiceError(httpErrorCode, userMessage, {
-        status: response.status,
-        body: errorBody,
-      });
-    }
-
-    const data = (await response.json()) as { markup?: string };
-    const markup = (data.markup ?? "").trim();
-
-    if (!markup) {
-      throw new GenerationServiceError(
-        "empty_response",
-        "The model returned an empty response. Please try again.",
-      );
-    }
-
-    return markup;
-  } catch (error) {
-    throw toGenerationServiceError(error);
   }
+
+  try {
+    return await attemptGenerate(wiretexaiUrl, apiKey, prompt, history);
+  } catch (error) {
+    const serviceError = toGenerationServiceError(error);
+
+    if (!RETRYABLE_CODES.has(serviceError.code)) {
+      throw serviceError;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+
+    try {
+      return await attemptGenerate(wiretexaiUrl, apiKey, prompt, history);
+    } catch (retryError) {
+      throw toGenerationServiceError(retryError);
+    }
+  }
+}
+
+async function attemptGenerate(
+  wiretexaiUrl: string,
+  apiKey: string,
+  prompt: string,
+  history: ChatMessage[],
+): Promise<string> {
+  // Filter history to only include user and assistant messages (belt-and-suspenders defense)
+  const safeHistory = history.filter(
+    (msg): msg is ChatMessage =>
+      (msg.role === "user" || msg.role === "assistant") &&
+      typeof msg.content === "string",
+  );
+
+  const requestBody = {
+    prompt: prompt.trim(),
+    history: safeHistory.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+    })),
+  };
+
+  const response = await fetch(`${wiretexaiUrl}/v1/generate`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(requestBody),
+    signal: AbortSignal.timeout(WIRETEXAI_TIMEOUT_MS),
+  });
+
+  if (!response.ok) {
+    // Read the raw text first so a non-JSON body (e.g. Cloudflare's own HTML
+    // error page when the tunnel has no live connection) is still visible in
+    // logs instead of collapsing to a silent null - that distinction is the
+    // difference between "our Go server rejected this" and "the request never
+    // reached our Go server at all".
+    const rawBody = await response.text().catch(() => null);
+    let parsedBody: unknown = null;
+    if (rawBody) {
+      try {
+        parsedBody = JSON.parse(rawBody);
+      } catch {
+        parsedBody = null;
+      }
+    }
+
+    const httpErrorCode = classifyHttpError(response.status);
+    const userMessage = getUserMessageForHttpError(httpErrorCode);
+    throw new GenerationServiceError(httpErrorCode, userMessage, {
+      status: response.status,
+      contentType: response.headers.get("content-type"),
+      body: parsedBody,
+      rawBody: rawBody ? rawBody.slice(0, 2000) : null,
+    });
+  }
+
+  const data = (await response.json()) as { markup?: string };
+  const markup = (data.markup ?? "").trim();
+
+  if (!markup) {
+    throw new GenerationServiceError(
+      "empty_response",
+      "The model returned an empty response. Please try again.",
+    );
+  }
+
+  return markup;
 }
 
 /**
