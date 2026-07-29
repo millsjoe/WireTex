@@ -9,14 +9,13 @@ import { sanitizeHistory } from "@/lib/generator/history-limit";
 import { stripRemoteImageUrls } from "@/lib/generator/sanitize-markup";
 import {
   extractWireTexMarkup,
-  SYSTEM_PROMPT,
   type ChatMessage,
 } from "@/lib/generator/system-prompt";
-import { callTogetherChat } from "@/lib/generator/together";
+import { callWireTexAI } from "@/lib/generator/wiretexai-client";
 import {
   logGenerationServiceError,
   toGenerationServiceError,
-} from "@/lib/generator/together-errors";
+} from "@/lib/generator/wiretexai-errors";
 import {
   consumeRateLimit,
   getRateLimitInfo,
@@ -40,17 +39,6 @@ async function persistSession(value: string): Promise<void> {
     maxAge: 60 * 60 * 24 * 30,
     path: "/",
   });
-}
-
-function buildMessages(
-  history: ChatMessage[],
-  prompt: string,
-): ChatMessage[] {
-  return [
-    { role: "system", content: SYSTEM_PROMPT },
-    ...history,
-    { role: "user", content: prompt },
-  ];
 }
 
 function formatResetTime(resetAt: number): string {
@@ -125,7 +113,7 @@ export async function generateWireframe(
   }
 
   try {
-    const raw = await callTogetherChat(buildMessages(safeHistory, trimmed));
+    const raw = await callWireTexAI(trimmed, safeHistory);
     const markup = stripRemoteImageUrls(extractWireTexMarkup(raw));
     const isGeneratorError = markup.startsWith("ERROR:");
 

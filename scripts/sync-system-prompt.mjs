@@ -50,3 +50,9 @@ writeFileSync(
 console.log(
   "Synced system prompt to lib/generator/system-prompt.generated.ts and models/Modelfile",
 );
+console.log(
+  "NOTE: The prompt used by the deployed WireTexAI backend lives in the WireTexAI repo at internal/prompt/wiretex-generator.txt.",
+);
+console.log(
+  "To update production: edit that file, run scripts/generate-modelfile.sh, rebuild the wiretex-generator Ollama model, and rebuild the Docker image.",
+);
