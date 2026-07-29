@@ -67,11 +67,19 @@ async function attemptGenerate(
   const startedAt = new Date();
   const startedMs = Date.now();
 
+  const requestHeaders = {
+    // Never log the token itself - presence/length is enough to confirm it was sent.
+    Authorization: apiKey ? `Bearer <redacted, ${apiKey.length} chars>` : "<missing>",
+    "Content-Type": "application/json",
+  };
+
   console.log(
     `[wiretexai-client] ${requestId} attempt=${attempt} request`,
     {
       timestamp: startedAt.toISOString(),
       url: `${wiretexaiUrl}/v1/generate`,
+      method: "POST",
+      requestHeaders,
       promptLen: prompt.trim().length,
       historyLen: history.length,
     },
@@ -126,6 +134,10 @@ async function attemptGenerate(
         durationMs: Date.now() - startedMs,
         httpStatus: response.status,
         errorCode: httpErrorCode,
+        // cf-ray is Cloudflare's per-request trace ID - hand this to Cloudflare
+        // support if escalating. If it's absent, the response likely never
+        // touched Cloudflare's edge at all (e.g. a local network failure).
+        responseHeaders: Object.fromEntries(response.headers.entries()),
       },
     );
 
@@ -161,6 +173,7 @@ async function attemptGenerate(
     {
       durationMs: Date.now() - startedMs,
       markupLen: markup.length,
+      responseHeaders: Object.fromEntries(response.headers.entries()),
     },
   );
 
